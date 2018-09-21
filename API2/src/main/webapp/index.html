@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script
+  src="https://code.jquery.com/jquery-3.3.1.js"
+  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+  crossorigin="anonymous"></script>
+</head>
+<body>
+<h4>Type numbers:</h4>
+<input type="text" name="numbers">
+<h4>Type order:</h4>
+<input type="text" name="order">
+<p>
+<button type="button" id="button">Sort</button>
+<p>
+<div id="afterSort"></div>
+<script>
+ $(document).ready(function(){
+	$( "#button" ).click(function() {
+	var a= {
+	numbers: $.parseJSON("[ " + $('input[name=numbers]').val() + " ]"),
+	order: $('input[name=order]').val()
+	}
+	console.log(JSON.stringify(a));
+	$.ajax({
+	  type: 'POST',
+	  url: 'http://localhost:8080/numbers/sort-command',
+	  data: JSON.stringify(a),
+	  contentType: 'application/json',
+	  success: function(sorted)
+					  {
+						console.log(sorted);
+						$( "#afterSort" ).empty();
+						$.each(sorted.numbers, function(index, value) {
+							afterSort.append(value);
+							if(index!=sorted.numbers.length-1)
+								$( "#afterSort" ).append(", ");
+					  });
+						},
+		fail: function(){console.log("fail");}
+});
+});
+});
+ </script>
+</body>
+</html>
