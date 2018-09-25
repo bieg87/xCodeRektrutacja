@@ -1,8 +1,8 @@
 package pl.xCode.rekrutacja;
 
-public class Sorted {
+public class Sorted {//klasa przechowujaca posortowane liczby
 	public String[] numbers;
-	public Sorted passNumbers() {
+	public Sorted returnNumbers() {
 		return this;
 	}
 }

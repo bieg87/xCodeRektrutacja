@@ -34,15 +34,16 @@ public class Api2ApplicationTests {
 	@Autowired
 	private TestRestTemplate restTemplate;
 	
-	@Test
+	@Test//Test wadomosci GET "ping"
 	public void pingTest() {
 		String body = this.restTemplate.getForObject("/status/ping", String.class);
 		assertThat(body).isEqualTo("pong");
 	}
-	
+	//Test sortowania losowych liczb
 	@Test
 	public void sortTest() {
 		Random rand = new Random(); 
+		//losowanie liczb
 		int length=rand.nextInt(1000);
 		int[] testNumbers=new int[length];
 		for(int i=0;i<length;i++) {
@@ -65,9 +66,10 @@ public class Api2ApplicationTests {
 		HttpEntity<SortRequest> request = new HttpEntity<SortRequest>(sortRequest, headers);
 		String sortResult=this.restTemplate.postForObject("/numbers/sort-command", request, String.class);
 		DocumentContext sortResultObject=JsonPath.parse(sortResult);
-		List<String> revenueList =sortResultObject.read("$['numbers']");
+		List<String> stringList =sortResultObject.read("$['numbers']");
 		List<Integer> intList=new ArrayList<Integer>();
-		for(String s : revenueList) intList.add(Integer.valueOf(s));
+		for(String s : stringList) intList.add(Integer.valueOf(s));
+		//sprawdzenie sortowania:
 		if(orderInt==0) {
 			int i=1;
 			for(;i<length;i++) {
@@ -85,6 +87,7 @@ public class Api2ApplicationTests {
 			assertTrue(k==length);
 		}
 	}
+	//test pobierania waluty z NBP
 	@Test
 	public void currencyTest() {
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();

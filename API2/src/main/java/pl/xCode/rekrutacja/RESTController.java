@@ -25,19 +25,19 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class RESTController {
-	
+		//reakcja na zapytanie GET 
 		@RequestMapping(value="/status/ping", method=RequestMethod.GET)
 		public String pong() {
 			return new Ping().getPing();
 		}
+		//reakcja na POST z liczbami do posortowania
 		@CrossOrigin
 		@RequestMapping(value="/numbers/sort-command", method=RequestMethod.POST,  headers = "Accept=application/json")
 		@ResponseBody
-		//public ResponseEntity<String> sortCommand(@RequestParam(name="numbers") String[] numbers, @RequestParam(name="order") String order) {
 		public ResponseEntity<String> sortCommand(@RequestBody SortRequest sortRequest) {
 			Sort toSort=new Sort(sortRequest.numbers,sortRequest.order);
 			String result=null;
-			HttpStatus httpStatus = null;
+			HttpStatus httpStatus =HttpStatus.OK;
 			if(sortRequest.numbers.length==0 || sortRequest.numbers[0].equals("null")) {
 				result="";
 				toSort.status="NO_CONTENT";
@@ -59,19 +59,31 @@ public class RESTController {
 					httpStatus=HttpStatus.NO_CONTENT;
 					break;
 					}
+				case "INTERNAL_SERVER_ERROR":{
+					httpStatus=HttpStatus.INTERNAL_SERVER_ERROR;
+					break;
+				}
 			}
 			return new ResponseEntity<>(result, httpStatus);
 		}
+		//zapytania o kurs waluty
 		@RequestMapping(value="/currencies/get-current-currency-value-command", method=RequestMethod.POST,  headers = "Accept=application/json")
 		public Rate currencyRate(@RequestBody Currency currency) {
-			RestTemplate restTemplate=new RestTemplate();
-			MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-	        headers.add("Content-Type", "application/json");
-			ResponseEntity<String> rateEntity=restTemplate.exchange("http://api.nbp.pl/api/exchangerates/rates/a/"+currency.currency, HttpMethod.GET, new HttpEntity<Object>(headers),String.class);
-			String rateString=rateEntity.getBody();
-			DocumentContext rateJsonObject=JsonPath.parse(rateString);
-			Rate rate=new Rate();
-			rate.currentRate=Double.toString(rateJsonObject.read("$.rates[0].mid"));
-			return rate;
+			if(currency.currencyValidation()){
+				RestTemplate restTemplate=new RestTemplate();
+				MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		        headers.add("Content-Type", "application/json");
+				ResponseEntity<String> rateEntity=restTemplate.exchange("http://api.nbp.pl/api/exchangerates/rates/a/"+currency.currency, HttpMethod.GET, new HttpEntity<Object>(headers),String.class);
+				String rateString=rateEntity.getBody();
+				DocumentContext rateJsonObject=JsonPath.parse(rateString);
+				Rate rate=new Rate();
+				rate.currentRate=Double.toString(rateJsonObject.read("$.rates[0].mid"));
+				return rate;
+			}
+			else{
+				String result=null;
+				HttpStatus httpStatus=HttpStatus.BAD_REQUEST;
+				return  new ResponseEntity<Rate>(result, httpStatus);
+			}
 		}
 }

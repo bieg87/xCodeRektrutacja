@@ -1,6 +1,6 @@
 package pl.xCode.rekrutacja;
 
-public class Ping {
+public class Ping {//klasa sluzaca do zwracana Stringa "pong"
 
 	private final String pong;
 	

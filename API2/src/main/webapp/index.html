@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <script
   src="https://code.jquery.com/jquery-3.3.1.js"
   integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
   crossorigin="anonymous"></script>
 </head>
 <body>
+<h5>W polu numbers należy wpisać liczby do posrotwania odzielone przecinkiem i spacją np.: 1, 3, 2</h5><p>
+<h5>Pole order przyjmuje 2 wartości ASC - sortowania od najmniejszej liczby do największej, DESC - sortowanie od największej do najmniejszej liczby.</h5>
 <h4>Type numbers:</h4>
 <input type="text" name="numbers">
 <h4>Type order:</h4>
@@ -17,29 +20,64 @@
 <div id="afterSort"></div>
 <script>
  $(document).ready(function(){
-	$( "#button" ).click(function() {
-	var a= {
-	numbers: $.parseJSON("[ " + $('input[name=numbers]').val() + " ]"),
-	order: $('input[name=order]').val()
-	}
-	console.log(JSON.stringify(a));
-	$.ajax({
-	  type: 'POST',
-	  url: 'http://localhost:8080/numbers/sort-command',
-	  data: JSON.stringify(a),
-	  contentType: 'application/json',
-	  success: function(sorted)
-					  {
-						console.log(sorted);
-						$( "#afterSort" ).empty();
-						$.each(sorted.numbers, function(index, value) {
-							afterSort.append(value);
-							if(index!=sorted.numbers.length-1)
-								$( "#afterSort" ).append(", ");
-					  });
+	$( "#button" ).click(function() {//funkcja wykonywana po kliknieciu przycisku
+	try
+	{
+		//utworzono obiekt
+		if($('input[name=numbers]').val()=="" || $('input[name=order]').val()=="")
+		{
+			throw "null value";
+		}
+		var a= {
+		numbers: $.parseJSON("[ " + $('input[name=numbers]').val() + " ]"),
+		order: $('input[name=order]').val()
+		}
+		console.log(JSON.stringify(a));
+		$.ajax({//zapytanie AJAX do wczesniej utworzonego API
+		  type: 'POST',
+		  url: 'http://localhost:8080/numbers/sort-command',
+		  data: JSON.stringify(a),
+		  contentType: 'application/json',
+		  success: function(sorted, status, xhr)//funkcja wywoływana gdy API zwroci wiadomosc z kodem 200
+						  {
+			  				console.log(xhr.status);
+			  				if(xhr.status=="200")
+			  				{
+								$( "#afterSort" ).empty();
+								$.each(sorted.numbers, function(index, value) //wypisanie wartosci posortowanych pod formularzem
+										{
+									afterSort.append(value);
+									if(index!=sorted.numbers.length-1)
+										$( "#afterSort" ).append(", ");
+										});
+			  				}
+			  				else
+			  				{
+			  					$( "#afterSort" ).empty();
+			  					$( "#afterSort" ).append(xhr.status +" "+xhr.statusText);
+			  				}
 						},
-		fail: function(){console.log("fail");}
-});
+			error: function(xhr, status, error){	//funkcja uruhcamiana gdy wystapil blad
+				console.log(status);
+				console.log(error);
+				$( "#afterSort" ).empty();
+				$( "#afterSort" ).append(xhr.status +" "+xhr.statusText);
+			}
+		});
+	}
+	catch(err)//wylapanie wyjatku i wyswietlenie go
+	{
+		if(err="null value")
+		{
+			$( "#afterSort" ).empty();
+			$( "#afterSort").append("null value");
+		}
+		else
+		{
+			$( "#afterSort" ).empty();
+			$( "#afterSort").append(err.message);
+		}
+	}
 });
 });
  </script>

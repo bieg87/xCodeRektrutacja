@@ -2,29 +2,32 @@ package pl.xCode.rekrutacja;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.zip.DataFormatException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class Sort {
+public class Sort {//klasa odpowiedzialna za sortowanie liczby
 	private String[] numbers;
 	private String order;
 	private Sorted afterSort;
 	private int[] numbersInt;
 	public String status;
-	private void stringToInt() {
+	private void stringToInt() throws NumberFormatException{//zmiana wartosci String na liczby
 		numbersInt=new int[numbers.length];
 		for(int i=0;i<numbers.length;i++) {
 			numbersInt[i]=Integer.parseInt(numbers[i]);
 		}
 	}
-	private void intToString() {
+	private void intToString() throws NumberFormatException{//zmiana wartości liczbowych na String
 		afterSort.numbers=new String[numbersInt.length];
 		for(int i=0;i<numbersInt.length;i++) {
 			numbers[i]=Integer.toString(numbersInt[i]);
 		}
 	}
-	private void quicksort(int a, int b) {
+	private void quicksort(int a, int b) throws ArrayIndexOutOfBoundsException{//sortowanie szybkie
 		int x=numbersInt[(a+b)/2];
 		int i=a;
 		int j=b;
@@ -62,35 +65,49 @@ public class Sort {
 		return order;
 	}
 	
-	public Sort(String[] numbers, String order)
+	public Sort(String[] numbers, String order)//konstruktor
 	{
 		setNumbers(numbers);
 		setOrder(order);
 		afterSort=new Sorted();
-		status=null;
+		status="OK";
 	}
-	public String sort()
+	public String sort()//metoda sortujaca
 	{
 		Logger log=LoggerFactory.getLogger(Sort.class);
 		try{
 			stringToInt();
-		}
-		catch (NumberFormatException e) {
-			log.error("NumberFormatException while convertion int to String", e);
-			status="BAD_REQUEST";
-		}
-		if(!(order.equals("ASC") || order.equals("DESC")))status="BAD_REQUEST";
+		if((this.order.equals("ASC") || this.order.equals("DESC")) == false) throw new DataFormatException();//status="BAD_REQUEST";
 		quicksort(0,numbersInt.length-1);
-		if(status == null)status="OK";
 		intToString();
 		afterSort.numbers=this.numbers;		
-		try {
-			ObjectMapper mapper=new ObjectMapper();
-	        return mapper.writeValueAsString(afterSort.passNumbers());
-	    } catch (JsonProcessingException e) {
+		ObjectMapper mapper=new ObjectMapper();//mapowanie i zwrocenie JSON'a
+	    return mapper.writeValueAsString(afterSort.returnNumbers());
+	    } 
+		catch (JsonProcessingException e) {
 	        log.error("JsonProcessingException while converting Entity into string", e);
-	        status="Internal Error";
+	        status="JSON parse error";
+	        return "{\"numbers\":[]}";
 	    }
-	    return null;
+		catch (NumberFormatException e) {
+			log.error("NumberFormatException while convertion  String and int", e);
+			status="BAD_REQUEST";
+			return "{\"numbers\":[]}";
+		}
+		catch (DataFormatException e) {
+			log.error("Wrong order format", e);
+			status="BAD_REQUEST";
+			return "{\"numbers\":[]}";
+		}
+		catch( ArrayIndexOutOfBoundsException e) {
+			log.error("Sorting array index of out bound", e);
+			status="INTERNAL_SERVER_ERROR";
+			return "{\"numbers\":[]}";
+		}
+		catch( Exception e) {
+			log.error("Not determined error", e);
+			status="INTERNAL_SERVER_ERROR";
+			return "{\"numbers\":[]}";
+		}
 	}
 }
