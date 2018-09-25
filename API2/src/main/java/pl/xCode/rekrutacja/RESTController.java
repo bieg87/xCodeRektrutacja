@@ -68,7 +68,7 @@ public class RESTController {
 		}
 		//zapytania o kurs waluty
 		@RequestMapping(value="/currencies/get-current-currency-value-command", method=RequestMethod.POST,  headers = "Accept=application/json")
-		public Rate currencyRate(@RequestBody Currency currency) {
+		public  ResponseEntity<Rate> currencyRate(@RequestBody Currency currency) {
 			if(currency.currencyValidation()){
 				RestTemplate restTemplate=new RestTemplate();
 				MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
@@ -78,12 +78,12 @@ public class RESTController {
 				DocumentContext rateJsonObject=JsonPath.parse(rateString);
 				Rate rate=new Rate();
 				rate.currentRate=Double.toString(rateJsonObject.read("$.rates[0].mid"));
-				return rate;
+				return new ResponseEntity<Rate>(rate,HttpStatus.OK);
 			}
 			else{
-				String result=null;
-				HttpStatus httpStatus=HttpStatus.BAD_REQUEST;
-				return  new ResponseEntity<Rate>(result, httpStatus);
+				Rate rate=new Rate();
+				rate.currentRate=null;
+				return  new ResponseEntity<Rate>(rate,HttpStatus.BAD_REQUEST);
 			}
 		}
 }
