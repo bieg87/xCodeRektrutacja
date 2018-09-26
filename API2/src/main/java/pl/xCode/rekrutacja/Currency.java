@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
-public class Currency {
+public class Currency {//klasa przechowujaca kurs podanej waluty
 
 	public String currency;
 	public boolean currencyValidation() {//funkcja sprawdzajaca poprawnosc nazwy waluty
